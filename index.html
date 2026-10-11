@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An animated walkthrough of how the p.g.f. of a random sum comes out as one p.g.f. inside another: total probability, swapping the sums, and the composition of p.g.f.s.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231B6370'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' text-anchor='middle' fill='%23F0F8F9'%3E%CE%A0%3C/text%3E%3C/svg%3E">
+<title>Composing P.G.F.s</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: one textbook-width reading column. Each step pairs the page's own equation
+   with a figure plate you can play; pencil notes sit in the flow like margin
+   annotations. Amber always marks the outcome being added up; petrol is the rest. */
+:root {
+  color-scheme: light;
+  --paper: #F0F4F4;
+  --plate: #E2EAEB;
+  --ink: #12232A;
+  --ink-2: #4A5C62;
+  --rule: #C2CFD2;
+  --petrol: #1B6370;
+  --on-petrol: #F0F8F9;
+  --amber: #EBB22A;
+  --amber-edge: #93680A;
+  --on-amber: #1B1300;
+  --graphite: #59636A;
+  --display: "Old Standard TT", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --body: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --label: "Source Sans 3", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --hand: "Caveat", "Bradley Hand", "Segoe Print", "Chalkboard SE", cursive;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1618; --plate: #172328; --ink: #E0EAEC; --ink-2: #9BAEB3; --rule: #2C3E43;
+    --petrol: #63B7C3; --on-petrol: #08191C; --amber: #E8B23A; --amber-edge: #F6D47E;
+    --on-amber: #1B1300; --graphite: #A9B4B9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1618; --plate: #172328; --ink: #E0EAEC; --ink-2: #9BAEB3; --rule: #2C3E43;
+  --petrol: #63B7C3; --on-petrol: #08191C; --amber: #E8B23A; --amber-edge: #F6D47E;
+  --on-amber: #1B1300; --graphite: #A9B4B9;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--body); font-size: 1.0625rem; line-height: 1.62;
+}
+.page { max-width: 44rem; margin: 0 auto; padding-inline: 16px; padding-block: 2.25rem 4.5rem; overflow-x: hidden; overflow-x: clip; }
+@media (min-width: 700px) { .page { padding-inline: 32px; } }
+
+p { margin: 0 0 1rem; max-width: 65ch; }
+h1, h2 { font-family: var(--display); font-weight: 700; color: var(--ink); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 8vw, 3.2rem); line-height: 1.04; }
+h2 { font-size: clamp(1.45rem, 4.6vw, 1.85rem); line-height: 1.15; margin-bottom: .85rem; }
+.eyebrow, .tag, .result-label {
+  font-family: var(--label); font-size: .76rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.eyebrow { color: var(--ink-2); margin-bottom: .8rem; }
+.tag { color: var(--petrol); display: block; margin-bottom: .35rem; }
+.lede { font-size: 1.15rem; color: var(--ink-2); margin-top: 1rem; }
+section { margin-top: 3.6rem; }
+
+.eq { overflow-x: auto; overflow-y: hidden; margin: 1rem 0 1.15rem; padding-block: .1rem; }
+@media (max-width: 480px) { .eq { font-size: .9em; } .eq.tight { font-size: .8em; } }
+.eqref { font-family: var(--label); font-size: .78rem; color: var(--ink-2); text-align: right; margin: 0 0 -.5rem; }
+
+.result { border: 1.5px solid var(--ink); padding: .9rem 1rem .4rem; margin-top: 1.7rem; }
+.result-label { color: var(--ink-2); }
+.result .eq { font-size: 1.4rem; margin: .5rem 0 .4rem; }
+.result p { font-size: .95rem; color: var(--ink-2); margin-bottom: .5rem; }
+
+.dists { display: flex; flex-wrap: wrap; gap: .6rem 2rem; margin: .4rem 0 1rem; }
+table.pmf { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.pmf caption { text-align: left; font-family: var(--label); font-size: .78rem; color: var(--ink-2); padding-bottom: .2rem; }
+.pmf th, .pmf td { padding: .2rem .55rem; text-align: center; border-bottom: 1px solid var(--rule); }
+.pmf th { text-align: left; font-weight: 400; padding-left: 0; }
+
+/* figure plates */
+.fig { background: var(--plate); border-radius: 6px; padding: 14px; margin: 1.3rem 0 1rem; }
+.fig > svg { display: block; width: 100%; height: auto; margin-inline: auto; overflow: visible; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; }
+.ctl-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ctl-label { font-family: var(--label); font-size: .86rem; color: var(--ink-2); }
+.figcap { font-size: .93rem; color: var(--ink-2); margin: .75rem 0 0; }
+.readout { font-size: 1rem; margin: .65rem 0 0; min-height: 1.6em; font-variant-numeric: tabular-nums; }
+
+.btn {
+  font-family: var(--label); font-size: .92rem; font-weight: 700;
+  border: 1.5px solid var(--petrol); border-radius: 999px; background: transparent; color: var(--petrol);
+  min-height: 2.3rem; padding: .35rem .95rem; cursor: pointer; touch-action: manipulation;
+}
+.btn.primary { background: var(--petrol); color: var(--on-petrol); }
+.btn:hover { background: var(--petrol); color: var(--on-petrol); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.stack { display: inline-grid; }
+.btn.stack > span { grid-area: 1 / 1; transition: opacity .25s; }
+.btn.stack > .bb { opacity: 0; }
+.btn.stack.b > .ba { opacity: 0; }
+.btn.stack.b > .bb { opacity: 1; }
+.chip {
+  font-family: var(--label); font-size: .9rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  min-width: 2.3rem; height: 2.3rem; padding: 0 .55rem; border-radius: 6px;
+  border: 1px solid var(--rule); background: var(--paper); color: var(--ink); cursor: pointer; touch-action: manipulation;
+}
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.chip.amber[aria-pressed="true"] { background: var(--amber); border-color: var(--amber-edge); color: var(--on-amber); }
+.btn:focus-visible, .chip:focus-visible, input[type="range"]:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+.pencil {
+  font-family: var(--hand); font-size: 1.4rem; font-weight: 500; line-height: 1.15; color: var(--graphite);
+  max-width: 30ch; margin: .2rem 0 1.3rem .5rem; transform: rotate(-1deg); transform-origin: left top;
+}
+
+/* SVG figure styles */
+.fig > svg text { font-family: var(--label); font-size: 11px; fill: var(--ink-2); }
+.fig > svg .tk { fill: var(--ink); font-weight: 700; font-size: 12px; }
+.fig > svg .tm { font-family: var(--body); fill: var(--ink); font-size: 12.5px; }
+.fig > svg .tm .v { font-style: italic; }
+.fig > svg .tm .sub { font-size: 9px; }
+.fig > svg .tm.big { font-size: 15px; }
+.fig > svg .tm.huge { font-size: 18px; }
+.fig > svg .tm.small { font-size: 12px; fill: var(--ink-2); }
+.seg { fill: var(--petrol); fill-opacity: .16; transition: fill-opacity .3s; }
+.seg.on { fill-opacity: .62; }
+.fig > svg .seg-n { fill: var(--ink); font-weight: 700; font-size: 11.5px; }
+.needle path { fill: var(--ink); }
+.needle line { stroke: var(--ink); stroke-width: 1.5; }
+.parent { fill: var(--petrol); }
+.fig > svg .parent-n { fill: var(--on-petrol); font-weight: 700; font-size: 11px; }
+.kid { fill: var(--paper); stroke: var(--petrol); stroke-width: 2; transition: fill .2s, stroke .2s; }
+.kid.counted { fill: var(--amber); stroke: var(--amber-edge); }
+.link { stroke: var(--petrol); stroke-opacity: .55; stroke-width: 1.5; }
+.cell { fill: var(--petrol); stroke: var(--plate); stroke-width: 1.5; }
+.cell.hit { fill: var(--amber); fill-opacity: 1; }
+.fig > svg .cz { fill: var(--ink); font-size: 10.5px; }
+.fig > svg .cz.hit { fill: var(--on-amber); font-weight: 700; }
+.focus { fill: none; stroke: var(--ink); stroke-width: 2; }
+.ruler { fill: var(--paper); stroke: var(--rule); stroke-width: 1; }
+.piece { fill: var(--amber); stroke: var(--plate); stroke-width: 1; }
+.piece.flying { stroke: var(--amber-edge); stroke-width: 1.5; }
+.tick, .axis { stroke: var(--ink-2); stroke-width: 1; }
+.grid { stroke: var(--rule); stroke-width: 1; }
+.bar { fill: var(--petrol); }
+.bar0 { fill: var(--amber); }
+.fig > svg .blab { fill: var(--ink); font-size: 10px; font-variant-numeric: tabular-nums; }
+.simbar { fill: var(--ink); fill-opacity: .17; }
+.exact { stroke: var(--petrol); stroke-width: 3; stroke-linecap: round; }
+.fig > svg .tx-p { fill: var(--petrol); font-weight: 700; font-size: 10px; }
+.fig > svg .tx-a { fill: var(--ink); font-weight: 700; font-size: 10.5px; }
+
+/* Step 1 ledger */
+table.ledger { border-collapse: collapse; width: 100%; margin-top: .9rem; font-variant-numeric: tabular-nums; font-size: .92rem; }
+.ledger th, .ledger td { padding: .32rem .45rem; text-align: right; border-bottom: 1px solid var(--rule); transition: background .25s, color .25s; }
+.ledger th:first-child, .ledger td:first-child { text-align: left; }
+.ledger thead th { font-weight: 400; color: var(--ink-2); font-size: .86rem; }
+.ledger tr.on td { background: var(--amber); color: var(--on-amber); }
+.ledger tfoot td { border-bottom: 0; font-weight: 600; }
+.ledger tfoot tr.lit td:last-child { background: var(--amber); color: var(--on-amber); }
+
+/* Step 2 joint table */
+.jt-wrap { overflow-x: auto; }
+.jt {
+  display: grid; grid-template-columns: 2.9rem repeat(7, minmax(1.95rem, 1fr)) 2.3rem; gap: 2px;
+  min-width: 19.9rem; font-family: var(--label); font-size: .74rem; font-variant-numeric: tabular-nums;
+}
+.jt > div { display: grid; place-items: center; min-height: 2rem; position: relative; border-radius: 3px; }
+.jt > div > .a, .jt > div > .b { grid-area: 1 / 1; position: relative; transition: opacity .35s ease, transform .35s ease; }
+.jt > div > .b { opacity: 0; transform: translateY(5px); }
+.jt > .f > .a { opacity: 0; transform: translateY(-5px); }
+.jt > .f > .b { opacity: 1; transform: none; }
+.jt > .jt-h { color: var(--ink-2); font-weight: 600; text-align: center; line-height: 1.1; white-space: nowrap; }
+.jt > .jt-rh { justify-items: start; padding-left: 2px; font-weight: 700; color: var(--ink); white-space: nowrap; font-size: .7rem; }
+.jt > .jt-c { color: var(--ink); transition: background .3s, color .3s; }
+.jt > .jt-c::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--petrol);
+  opacity: calc(var(--ha, 0) * .5); transition: opacity .35s;
+}
+.jt > .jt-c.f::before { opacity: calc(var(--hb, 0) * .5); }
+.jt > .jt-c.hot { background: var(--amber); color: var(--on-amber); }
+.jt > .jt-c.hot::before { opacity: 0; }
+.jt > .jt-empty { color: var(--rule); }
+.jt > .jt-rs { font-weight: 700; border-left: 1.5px solid var(--ink); border-radius: 0; }
+.jt > .jt-cs { font-weight: 700; border-top: 1.5px solid var(--ink); border-radius: 0; transition: background .3s, color .3s; }
+.jt > .jt-cs.lit, .jt > .jt-s.lit { background: var(--amber); color: var(--on-amber); }
+.jt > .jt-s { font-family: var(--body); font-size: .9rem; color: var(--petrol); transition: background .3s, color .3s; }
+
+/* Step 3 polynomials */
+.pvs { display: grid; grid-template-columns: minmax(0, 1fr); margin-top: .4rem; }
+.pv { grid-area: 1 / 1; min-width: 0; opacity: 0; transition: opacity .3s; }
+.pv.on { opacity: 1; }
+.pv .eq { margin: .4rem 0 0; }
+
+/* Step 4 substitution */
+.morph {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center;
+  gap: .3rem .55rem; font-size: 1.15rem; padding: .5rem 0 .6rem; min-height: 3.2rem;
+}
+.term { display: inline-flex; align-items: baseline; gap: .2rem; white-space: nowrap; }
+.mslot {
+  display: inline-grid; color: var(--petrol); transition: width .45s ease;
+  clip-path: polygon(0 -80%, 100% -80%, 100% 180%, 0 180%);
+}
+.mslot > span { grid-area: 1 / 1; justify-self: start; white-space: nowrap; transition: opacity .35s ease, transform .35s ease; }
+.mslot > .vb { opacity: 0; transform: translateY(.7em); }
+.mslot.b > .va { opacity: 0; transform: translateY(-.7em); }
+.mslot.b > .vb { opacity: 1; transform: none; }
+.mslot.lhs { color: var(--ink); }
+.machine {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 6px 3px;
+  margin: 1rem 0 .4rem; font-family: var(--label);
+}
+.mbox { display: grid; justify-items: center; gap: 3px; }
+.mbox .ml { font-size: .82rem; color: var(--ink-2); font-family: var(--body); }
+.mbox output {
+  font-weight: 700; font-variant-numeric: tabular-nums; font-size: .95rem; text-align: center;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: .2rem .3rem; min-width: 3.1rem; font-size: .9rem;
+}
+.mfn { border: 1.5px solid var(--petrol); color: var(--petrol); border-radius: 999px; padding: .1rem .35rem; font-family: var(--body); margin-bottom: 2px; }
+.marr { color: var(--ink-2); padding-bottom: .3rem; font-size: .85rem; }
+.slider { display: flex; align-items: center; gap: 10px; margin-top: .6rem; }
+.slider label { font-family: var(--body); font-style: italic; }
+.slider input { flex: 1; accent-color: var(--petrol); min-width: 0; }
+.check { font-size: .95rem; margin: .6rem 0 0; font-variant-numeric: tabular-nums; }
+.check output { font-family: var(--label); font-weight: 700; }
+
+/* Generations */
+.stats { margin: .8rem 0 0; display: grid; gap: .35rem; font-size: .95rem; }
+.stats > div { display: flex; flex-wrap: wrap; gap: .1rem .6rem; justify-content: space-between; border-bottom: 1px solid var(--rule); padding-bottom: .3rem; }
+.stats dt { color: var(--ink-2); }
+.stats dd { margin: 0; font-variant-numeric: tabular-nums; font-family: var(--label); }
+.stats dd b { background: var(--amber); color: var(--on-amber); padding: 0 .25rem; border-radius: 3px; }
+
+.note-hist { font-size: .93rem; color: var(--ink-2); }
+footer p { margin: 0 0 .5rem; }
+footer a { color: var(--petrol); text-underline-offset: 2px; }
+footer { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .85rem; color: var(--ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}
+</style>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+    svg: { fontCache: 'global' },
+    options: { enableMenu: false }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+</head>
+<body>
+<main class="page">
+  <header>
+    <p class="eyebrow">M343 · Section 2 · The size of the <i>n</i>th generation</p>
+    <h1>Composing P.G.F.s</h1>
+    <p class="lede">Section 2 of M343 works out the probability generating function of a sum whose number of terms is itself random. Each move in that derivation has a figure below that you can play.</p>
+    <div class="result">
+      <span class="result-label">Where the derivation ends up</span>
+      <div class="eq">\[\Pi_Z(s) = \Pi_N\bigl(\Pi_X(s)\bigr)\]</div>
+      <p>The p.g.f. of \(N\), evaluated at the p.g.f. of \(X\).</p>
+    </div>
+  </header>
+
+  <section id="setup" aria-labelledby="h-setup">
+    <span class="tag">The set-up</span>
+    <h2 id="h-setup">A sum with a random number of terms</h2>
+    <p>Picture \(N\) parents. Parent \(i\) has \(X_i\) children, and \(Z\) is the total number of children:</p>
+    <div class="eq">\[Z = X_1 + X_2 + \cdots + X_N\]</div>
+    <p>The \(X_i\) are independent, each distributed like \(X\), and independent of \(N\). The awkward part is that the number of terms is random. In a branching process this is exactly how one generation becomes the next: \(N\) is the size of generation \(n\) and \(Z\) is the size of generation \(n+1\).</p>
+    <div class="fig">
+      <div class="controls">
+        <button class="btn primary" id="fam-btn" type="button">Draw another family</button>
+      </div>
+      <svg id="fam-svg" viewBox="0 0 360 236" style="max-width:500px" role="img" aria-label="A needle picks the number of parents N from a ruler split by P(N = n); each parent then has 0, 1 or 2 children, and the children are counted to give Z."></svg>
+      <p class="readout" id="fam-out" aria-live="polite"></p>
+      <p class="figcap">The needle stops at a random point and the segment it lands in gives \(N\). Segment widths are the probabilities \(P(N = n)\). Each parent then has 0, 1 or 2 children, independently of the others.</p>
+    </div>
+    <p>Every figure on this page uses the same small example:</p>
+    <div class="dists" id="pmf"></div>
+  </section>
+
+  <section id="step-1" aria-labelledby="h-1">
+    <span class="tag">Step 1 · Theorem of Total Probability</span>
+    <h2 id="h-1">Split the problem by the value of \(N\)</h2>
+    <div class="eq">\[P(Z = z) = \sum_{n=0}^{\infty} P(Z = z \mid N = n)\,P(N = n)\]</div>
+    <p>Finding \(P(Z = z)\) head-on is awkward because you don't know how many terms are in the sum. If you did know \(N\), the problem would be routine. The Theorem of Total Probability lets you assume you know it: work out the answer separately for \(N = 0, 1, 2, \ldots\), weight each answer by the probability of that case, and add.</p>
+    <p>This is allowed because \(N\) must take exactly one of those values. The cases never overlap and together they cover everything, which is why the text opens by noting that \(N\) takes some value in \(\{0, 1, \ldots\}\).</p>
+    <div class="fig">
+      <div class="controls">
+        <div class="ctl-group"><span class="ctl-label">Track \(Z =\)</span><span class="ctl-group" id="area-chips"></span></div>
+        <button class="btn primary" id="area-play" type="button">Play</button>
+      </div>
+      <svg id="area-svg" viewBox="0 0 360 330" style="max-width:470px" role="img" aria-label="A unit square split into vertical strips, one per value of N, with widths P(N = n). Each strip is stacked with the conditional distribution of Z. The blocks for the tracked value of Z are highlighted and slide down onto a ruler, where their areas add up to P(Z = z)."></svg>
+      <table class="ledger" id="area-ledger"></table>
+      <p class="figcap">Each strip is one value of \(N\), and its width is \(P(N = n)\). Inside a strip the blocks show the distribution of \(Z\) given that value, stacked from \(z = 0\) at the bottom, so a block's area is \(P(Z = z \mid N = n)\,P(N = n)\). The amber blocks are every way of getting the value you're tracking.</p>
+    </div>
+    <p class="pencil">P(A | B) × P(B) is one strip on its own. Add up every strip to get P(A).</p>
+    <p>It is the same sum you use to turn segment rates into an overall rate: each segment's rate times that segment's share, added up.</p>
+  </section>
+
+  <section id="step-2" aria-labelledby="h-2">
+    <span class="tag">Step 2 · Equation (2.9)</span>
+    <h2 id="h-2">Swap the order of the sums</h2>
+    <div class="eq tight">\[\begin{aligned}\Pi_Z(s) &amp;= \sum_{z=0}^{\infty}\sum_{n=0}^{\infty} P(Z = z \mid N = n)\,P(N = n)\,s^z \\ &amp;= \sum_{n=0}^{\infty} P(N = n) \sum_{z=0}^{\infty} P(Z = z \mid N = n)\,s^z\end{aligned}\]</div>
+    <p>Each term of the double sum is one cell of the table below, multiplied by \(s^z\). A cell holds the chance that \(N = n\) and \(Z = z\) happen together. The first line adds down each column first; the second adds along each row first. The cells are the same either way, so the total is the same.</p>
+    <p>Along a row \(n\) is fixed, so every cell in that row contains the same factor \(P(N = n)\), and it can come outside the inner sum. That is all the text means by \(P(N = n)\) being independent of the value of \(Z\): it doesn't change as \(z\) changes. It does not say that \(N\) and \(Z\) are independent random variables. They are strongly dependent.</p>
+    <div class="fig">
+      <div class="controls">
+        <button class="btn primary" id="jt-col" type="button">Add down each column</button>
+        <button class="btn" id="jt-row" type="button">Factor out each row</button>
+      </div>
+      <div class="jt-wrap"><div class="jt" id="jt" role="group" aria-label="Joint probabilities P(N = n and Z = z) for n from 0 to 3 and z from 0 to 6, with row totals and column totals."></div></div>
+      <p class="figcap" id="jt-cap" aria-live="polite">Each cell is \(P(N = n)\,P(Z = z \mid N = n)\). Row totals give back \(P(N = n)\); column totals give \(P(Z = z)\).</p>
+    </div>
+    <p class="pencil">Same number all along the row, so it comes out as a factor.</p>
+  </section>
+
+  <section id="step-3" aria-labelledby="h-3">
+    <span class="tag">Step 3 · Result (2.8)</span>
+    <h2 id="h-3">Inside a row, the sum has a fixed number of terms</h2>
+    <div class="eq">\[\sum_{z=0}^{\infty} P(Z = z \mid N = n)\,s^z = \bigl(\Pi_X(s)\bigr)^n\]</div>
+    <p>Once \(N = n\), \(Z\) is just \(X_1 + \cdots + X_n\), an ordinary sum of \(n\) independent copies of \(X\). Result (2.8) gives its p.g.f. as \(\Pi_X(s)\) multiplied by itself \(n\) times. This is where the assumption that the \(X_i\) are independent of \(N\) gets used: knowing \(N = n\) must not change how the \(X_i\) behave.</p>
+    <p>For \(n = 0\) there are no terms. Then \(Z = 0\) for certain, its p.g.f. is \(s^0 = 1\), and \(\bigl(\Pi_X(s)\bigr)^0 = 1\) as well. That is why the text checks \(n = 0\) separately.</p>
+    <div class="eq">\[\Pi_X(s) = 0.25 + 0.5s + 0.25s^2 = \tfrac14(1+s)^2\]</div>
+    <div class="fig">
+      <div class="controls">
+        <div class="ctl-group"><span class="ctl-label">Condition on</span><span class="ctl-group" id="cond-chips"></span></div>
+      </div>
+      <svg id="cond-svg" viewBox="0 0 360 196" style="max-width:470px" role="img" aria-label="Bar chart of the distribution of Z given N = n, which is the distribution of a sum of n independent copies of X."></svg>
+      <div class="pvs" id="cond-polys"></div>
+      <p class="figcap">These bars are the heights of strip \(n\) in Step 1, and also the coefficients of \(\bigl(\Pi_X(s)\bigr)^n\).</p>
+    </div>
+  </section>
+
+  <section id="step-4" aria-labelledby="h-4">
+    <span class="tag">Step 4 · Equation (2.10)</span>
+    <h2 id="h-4">Recognise the p.g.f. of \(N\)</h2>
+    <div class="eq">\[\begin{aligned}\Pi_Z(s) &amp;= \sum_{n=0}^{\infty} P(N = n)\,\bigl(\Pi_X(s)\bigr)^n \\ \Pi_N(s) &amp;= \sum_{n=0}^{\infty} P(N = n)\,s^n\end{aligned}\]</div>
+    <p>Put Step 3 back into (2.9) and you get the first line, which is (2.10). Set it beside the definition of \(\Pi_N(s)\) on the second line. The coefficients are the same and the powers are the same. The only difference is the thing raised to each power, which is \(s\) in one and \(\Pi_X(s)\) in the other. So \(\Pi_Z(s)\) is \(\Pi_N\) evaluated at the point \(\Pi_X(s)\).</p>
+    <div class="fig">
+      <div class="controls">
+        <button class="btn primary stack" id="morph-btn" type="button" aria-pressed="false"><span class="ba">Swap \(s\) for \(\Pi_X(s)\)</span><span class="bb">Put \(s\) back</span></button>
+      </div>
+      <div class="morph" id="morph" aria-live="polite"></div>
+      <div class="machine" aria-live="polite">
+        <div class="mbox"><span class="ml">\(s\)</span><output id="m-s" for="s-range">0.50</output></div>
+        <span class="marr" aria-hidden="true">→</span>
+        <span class="mfn">\(\Pi_X\)</span>
+        <span class="marr" aria-hidden="true">→</span>
+        <div class="mbox"><span class="ml">\(\Pi_X(s)\)</span><output id="m-t" for="s-range">0.5625</output></div>
+        <span class="marr" aria-hidden="true">→</span>
+        <span class="mfn">\(\Pi_N\)</span>
+        <span class="marr" aria-hidden="true">→</span>
+        <div class="mbox"><span class="ml">\(\Pi_Z(s)\)</span><output id="m-z" for="s-range">0.4309</output></div>
+      </div>
+      <div class="slider"><label for="s-range">s</label><input id="s-range" type="range" min="0" max="1" step="0.01" value="0.5"></div>
+      <p class="check">Straight from the distribution of \(Z\) in Step 1: \(\sum_z P(Z = z)\,s^z =\) <output id="m-d" for="s-range">0.4309</output></p>
+      <p class="figcap">Read the composition as a pipeline: feed \(s\) into \(\Pi_X\), then feed the answer into \(\Pi_N\). Move the slider; the two routes always agree.</p>
+    </div>
+    <p class="pencil">Same coefficients, same powers. Only the thing in the slot changes.</p>
+    <div class="eq">\[\Pi_Z = \Pi_N \circ \Pi_X\]</div>
+  </section>
+
+  <section id="check" aria-labelledby="h-check">
+    <span class="tag">Check</span>
+    <h2 id="h-check">Does the formula match real draws?</h2>
+    <p>Expand \(\Pi_N\bigl(\Pi_X(s)\bigr)\) as a polynomial and its coefficients are the probabilities \(P(Z = z)\). Drawing thousands of families the slow way should land on the same numbers. The page opens with 1,000 families already drawn.</p>
+    <div class="fig">
+      <div class="controls">
+        <button class="btn primary" id="sim-100" type="button">Draw 100 more</button>
+        <button class="btn" id="sim-10k" type="button">Draw 10,000 more</button>
+        <button class="btn" id="sim-reset" type="button">Start again</button>
+      </div>
+      <svg id="sim-svg" viewBox="0 0 360 196" style="max-width:470px" role="img" aria-label="Grey bars show the proportion of simulated families with each total Z; petrol lines show the exact probabilities from expanding the composed p.g.f."></svg>
+      <p class="readout" id="sim-out" aria-live="polite"></p>
+      <p class="figcap">Grey bars: share of simulated families with each total. Petrol lines and labels: coefficients of \(\Pi_N\bigl(\Pi_X(s)\bigr)\).</p>
+    </div>
+    <p>The mean falls out too. Differentiate with the chain rule, put \(s = 1\), and use \(\Pi_X(1) = 1\):</p>
+    <div class="eq">\[\begin{aligned}E(Z) = \Pi_Z'(1) &amp;= \Pi_N'\bigl(\Pi_X(1)\bigr)\,\Pi_X'(1) \\ &amp;= E(N)\,E(X) = 1.7 \times 1 = 1.7\end{aligned}\]</div>
+  </section>
+
+  <section id="use" aria-labelledby="h-use">
+    <span class="tag">Why it matters</span>
+    <h2 id="h-use">Generation after generation</h2>
+    <p>In a branching process, generation \(n+1\) is a random sum: each of the \(Z_n\) individuals in generation \(n\) has an independent number of offspring distributed like \(X\). Starting from one individual and applying the result once per generation gives:</p>
+    <div class="eq">\[\begin{aligned}\Pi_{Z_{n+1}}(s) &amp;= \Pi_{Z_n}\bigl(\Pi_X(s)\bigr) \\ \Pi_{Z_n}(s) &amp;= \Pi_X\bigl(\Pi_X(\cdots\Pi_X(s)\cdots)\bigr)\end{aligned}\]</div>
+    <p>The second line has \(\Pi_X\) composed with itself \(n\) times. Setting \(s = 0\) keeps only the constant term, so \(\Pi_{Z_n}(0) = P(Z_n = 0)\), the chance that the family has died out by generation \(n\).</p>
+    <div class="fig">
+      <div class="controls">
+        <div class="ctl-group"><span class="ctl-label">Offspring mean</span><span class="ctl-group" id="gen-presets"></span></div>
+        <div class="ctl-group"><span class="ctl-label">Generation</span><span class="ctl-group" id="gen-chips"></span></div>
+        <button class="btn primary" id="gen-play" type="button">Play</button>
+      </div>
+      <svg id="gen-svg" viewBox="0 0 360 200" style="max-width:500px" role="img" aria-label="Bar chart of the size of generation n, starting from one individual, computed by composing the offspring p.g.f. n times. The bar at zero, the chance of having died out, is highlighted."></svg>
+      <dl class="stats" id="gen-out" aria-live="polite"></dl>
+    </div>
+    <p>With mean 1 the expected size stays at 1 in every generation, yet the chance of having died out keeps climbing. The families that survive make up for it by being larger.</p>
+    <p class="note-hist">Galton posed the question of vanishing surnames in 1873, and Watson's reply in 1874 worked by iterating the generating function in just this way.</p>
+    <p>The same result applies wherever a random number of random amounts are added, such as claims per year and claim sizes in insurance, or fraud cases and loss per case. When the amounts aren't whole numbers, the same argument works with moment generating functions:</p>
+    <div class="eq">\[M_Z(t) = \Pi_N\bigl(M_X(t)\bigr)\]</div>
+  </section>
+
+  <footer>
+    <p>An unofficial study aid for the Open University module M343, not produced by or affiliated with the Open University. Equation and result numbers refer to Section 2, <i>The size of the nth generation</i>, of the module text. The example distributions are made up for illustration.</p>
+    <p><a href="https://github.com/nihilisticiconoclast/composing-pgfs">Source on GitHub</a></p>
+  </footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- the example: every figure is computed from these two lists ---------- */
+  const PN = [0.1, 0.3, 0.4, 0.2];   // P(N = n), n = 0..3
+  const PX = [0.25, 0.5, 0.25];      // P(X = x), x = 0..2
+
+  /* A distribution on 0, 1, 2, ... is the coefficient list of its p.g.f. */
+  const conv = (a, b) => {
+    const r = new Array(a.length + b.length - 1).fill(0);
+    for (let i = 0; i < a.length; i++) for (let j = 0; j < b.length; j++) r[i + j] += a[i] * b[j];
+    return r;
+  };
+  const power = (p, n) => { let r = [1]; for (let i = 0; i < n; i++) r = conv(r, p); return r; };
+  const compose = (outer, inner) => {              // coefficients of outer(inner(s))
+    let r = [0];
+    outer.forEach((c, n) => {
+      const t = power(inner, n);
+      while (r.length < t.length) r.push(0);
+      t.forEach((x, i) => { r[i] += c * x; });
+    });
+    return r;
+  };
+  const evalAt = (p, s) => p.reduceRight((acc, c) => acc * s + c, 0);
+  const meanOf = p => p.reduce((a, c, i) => a + c * i, 0);
+  const varOf = p => p.reduce((a, c, i) => a + c * i * i, 0) - meanOf(p) ** 2;
+  const drawFrom = p => {
+    let u = Math.random();
+    for (let i = 0; i < p.length - 1; i++) { if (u < p[i]) return i; u -= p[i]; }
+    return p.length - 1;
+  };
+
+  const COND = PN.map((_, n) => power(PX, n));             // P(Z = z | N = n)
+  const JOINT = COND.map((c, n) => c.map(x => x * PN[n]));  // P(N = n, Z = z)
+  const PZ = compose(PN, PX);                               // P(Z = z) = coefficients of Pi_N(Pi_X(s))
+  const ZMAX = PZ.length - 1;
+  const EZ = meanOf(PZ), VZ = varOf(PZ);
+
+  /* ---------- formatting ---------- */
+  const trim = (x, d = 4) => String(Number((Math.abs(x) < 1e-12 ? 0 : x).toFixed(d)));
+  const dot3 = x => (x >= 0.9995 ? '1' : x < 0.0005 ? '0' : x.toFixed(3).replace(/^0/, ''));
+  const I = s => `<i>${s}</i>`;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  /* ---------- MathJax: typeset text that changes after load ---------- */
+  function setMath(el, html) {
+    el.innerHTML = html;
+    const MJ = window.MathJax;
+    if (!MJ || !MJ.startup || !MJ.startup.promise || !MJ.typesetPromise) return; // first typeset will catch it
+    el.style.visibility = 'hidden';
+    MJ.startup.promise = MJ.startup.promise
+      .then(() => { if (MJ.typesetClear) MJ.typesetClear([el]); return MJ.typesetPromise([el]); })
+      .catch(() => {})
+      .then(() => { el.style.visibility = ''; });
+  }
+
+  /* ---------- animation ---------- */
+  const RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const easeIO = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  function tween(ms, frame, alive, ease = easeIO) {
+    return new Promise(resolve => {
+      if (RM || ms <= 0) { frame(1); resolve(); return; }
+      const t0 = performance.now();
+      const step = now => {
+        if (alive && !alive()) { resolve(); return; }
+        const t = Math.min(1, (now - t0) / ms);
+        frame(ease(t));
+        if (t < 1) requestAnimationFrame(step); else resolve();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  const pause = ms => new Promise(r => setTimeout(r, RM ? 0 : ms));
+  const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+  function Runner() { let id = 0; return { start() { const me = ++id; return () => me === id; } }; }
+
+  /* ---------- SVG helpers ---------- */
+  const NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function svgText(parent, x, y, str, cls, anchor) {
+    const t = svgEl('text', { x, y, class: cls || '', 'text-anchor': anchor || 'middle' }, parent);
+    t.textContent = str;
+    return t;
+  }
+  /* maths-style label: one-letter words are italic variables, "_k" is a subscript */
+  function setSvgMath(t, src) {
+    t.textContent = '';
+    const re = /([A-Za-z]+)(?:_(\w+))?|([^A-Za-z]+)/g;
+    let m;
+    while ((m = re.exec(src))) {
+      if (m[1]) {
+        svgEl('tspan', m[1].length === 1 ? { class: 'v' } : {}, t).textContent = m[1];
+        if (m[2]) {
+          svgEl('tspan', { class: 'sub', dy: '3' }, t).textContent = m[2];
+          svgEl('tspan', { dy: '-3' }, t).textContent = '\u200a';
+        }
+      } else {
+        svgEl('tspan', {}, t).textContent = m[3];
+      }
+    }
+  }
+  function svgMath(parent, x, y, src, cls, anchor) {
+    const t = svgEl('text', { x, y, class: 'tm ' + (cls || ''), 'text-anchor': anchor || 'middle' }, parent);
+    setSvgMath(t, src);
+    return t;
+  }
+  function makeChips(host, items, cls, onPick) {
+    return items.map((it, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip ' + (cls || '');
+      b.innerHTML = it.html;
+      b.setAttribute('aria-label', it.aria);
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => onPick(i));
+      host.appendChild(b);
+      return b;
+    });
+  }
+  const press = (chips, k) => chips.forEach((c, i) => c.setAttribute('aria-pressed', String(i === k)));
+
+  /* ---------- example tables ---------- */
+  (function tables() {
+    const row = (h, cells) => `<tr><th scope="row">${h}</th>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
+    $('#pmf').innerHTML =
+      `<table class="pmf"><caption>Parents</caption>${row('\\(n\\)', PN.map((_, n) => n))}${row('\\(P(N = n)\\)', PN.map(p => trim(p)))}</table>` +
+      `<table class="pmf"><caption>Children of each parent</caption>${row('\\(x\\)', PX.map((_, x) => x))}${row('\\(P(X = x)\\)', PX.map(p => trim(p)))}</table>`;
+  })();
+
+  /* ---------- set-up: draw a family ---------- */
+  (function family() {
+    const svg = $('#fam-svg'), out = $('#fam-out'), run = Runner();
+    const X0 = 32, W = 296, RY = 22, RH = 20, PY = 104, CY = 168, PR = 13, CR = 8.5;
+    const segs = [];
+    let acc = 0;
+    PN.forEach((p, n) => {
+      const x = X0 + acc * W, w = p * W;
+      segs.push(svgEl('rect', { x: x + 1, y: RY, width: w - 2, height: RH, rx: 2, class: 'seg' }, svg));
+      svgText(svg, x + w / 2, RY + 14.5, String(n), 'seg-n');
+      svgText(svg, x + w / 2, RY + RH + 14, trim(p), '');
+      acc += p;
+    });
+    svgMath(svg, X0 - 9, RY + 15, 'N', 'big', 'end');
+    const needle = svgEl('g', { class: 'needle' }, svg);
+    svgEl('path', { d: 'M0,-2 L-5.5,-11 L5.5,-11 Z' }, needle);
+    svgEl('line', { x1: 0, y1: -2, x2: 0, y2: RH + 3 }, needle);
+    let needleX = X0;
+    const placeNeedle = x => { needleX = x; needle.setAttribute('transform', `translate(${x.toFixed(2)},${RY})`); };
+    const fam = svgEl('g', {}, svg);
+    const zText = svgMath(svg, 180, 226, '', 'huge');
+    const parentX = (i, n) => X0 + W * (i + 0.5) / n;
+    const segOf = u => { let a = 0; for (let n = 0; n < PN.length; n++) { a += PN[n]; if (u < a) return n; } return PN.length - 1; };
+
+    function readout(n, xs, z) {
+      if (n === 0) return `\\(N = 0\\), so the sum has no terms and \\(Z = 0\\).`;
+      if (n === 1) return `\\(N = 1\\), so \\(Z = X_1 = ${z}\\).`;
+      const terms = xs.map((_, i) => `X_{${i + 1}}`).join(' + ');
+      return `\\(N = ${n}\\), so \\(Z = ${terms} = ${xs.join(' + ')} = ${z}\\).`;
+    }
+
+    async function show(n, xs, u, animate) {
+      const alive = run.start();
+      fam.textContent = '';
+      segs.forEach(s => s.classList.remove('on'));
+      setSvgMath(zText, '');
+      if (animate) out.innerHTML = '&nbsp;';
+      const to = X0 + u * W;
+      if (animate && !RM) {
+        const from = needleX;
+        let travel = (X0 + W - from) + (to - X0);
+        if (travel < W * 0.75) travel += W;
+        await tween(1100, t => placeNeedle(X0 + ((((from - X0) + travel * t) % W) + W) % W), alive, easeOut);
+        if (!alive()) return;
+      }
+      placeNeedle(to);
+      segs[n].classList.add('on');
+
+      for (let i = 0; i < n; i++) {
+        const g = svgEl('g', { transform: `translate(${parentX(i, n)},${PY})` }, fam);
+        const c = svgEl('circle', { r: animate ? 0 : PR, class: 'parent' }, g);
+        svgText(g, 0, 4, String(i + 1), 'parent-n');
+        if (animate) { await tween(220, t => c.setAttribute('r', (PR * t).toFixed(2)), alive, easeOut); if (!alive()) return; }
+      }
+      if (n === 0) svgMath(fam, 180, 138, 'No parents, so no children', 'small');
+
+      const kids = [];
+      for (let i = 0; i < n; i++) {
+        const px = parentX(i, n), x = xs[i];
+        for (let j = 0; j < x; j++) {
+          const cx = px + (j - (x - 1) / 2) * 24, y2 = CY - CR;
+          const line = svgEl('line', { x1: px, y1: PY + PR, x2: animate ? px : cx, y2: animate ? PY + PR : y2, class: 'link' }, fam);
+          const c = svgEl('circle', { cx, cy: CY, r: animate ? 0 : CR, class: 'kid' }, fam);
+          kids.push(c);
+          if (animate) {
+            await tween(170, t => { line.setAttribute('x2', lerp(px, cx, t)); line.setAttribute('y2', lerp(PY + PR, y2, t)); }, alive);
+            if (!alive()) return;
+            await tween(150, t => c.setAttribute('r', (CR * t).toFixed(2)), alive, easeOut);
+            if (!alive()) return;
+          }
+        }
+        svgMath(fam, px, CY + CR + 19, `X_${i + 1} = ${x}`, 'small');
+      }
+
+      const z = xs.reduce((a, b) => a + b, 0);
+      for (let k = 0; k < kids.length; k++) {
+        kids[k].classList.add('counted');
+        if (animate) { setSvgMath(zText, `Z = ${k + 1}`); await pause(150); if (!alive()) return; }
+      }
+      setSvgMath(zText, `Z = ${z}`);
+      setMath(out, readout(n, xs, z));
+    }
+
+    $('#fam-btn').addEventListener('click', () => {
+      const u = Math.random(), n = segOf(u);
+      const xs = Array.from({ length: n }, () => drawFrom(PX));
+      show(n, xs, u, true);
+    });
+    show(2, [2, 1], 0.62, false);   // a finished example family at rest
+  })();
+
+  /* ---------- Step 1: total probability as an area ---------- */
+  (function area() {
+    const svg = $('#area-svg'), ledger = $('#area-ledger'), run = Runner();
+    const X0 = 44, Y0 = 58, W = 296, H = 196, RY = 288, RH = 16;
+    let z = 2;
+    const sx = [], sw = [];
+    { let a = 0; PN.forEach(p => { sx.push(X0 + a * W); sw.push(p * W); a += p; }); }
+
+    svgMath(svg, X0 - 8, 31, 'N', 'big', 'end');
+    PN.forEach((p, n) => {
+      svgText(svg, sx[n] + sw[n] / 2, 30, String(n), 'tk');
+      svgText(svg, sx[n] + sw[n] / 2, 46, trim(p), '');
+    });
+    const axLab = svgEl('text', { transform: `translate(15 ${Y0 + H / 2}) rotate(-90)`, 'text-anchor': 'middle', class: 'tm small' }, svg);
+    setSvgMath(axLab, 'P(Z = z | N = n)');
+    svgText(svg, X0 - 6, Y0 + H + 3, '0', '', 'end');
+    svgText(svg, X0 - 6, Y0 + 8, '1', '', 'end');
+
+    const cells = [];
+    PN.forEach((_, n) => {
+      let yb = Y0 + H;
+      COND[n].forEach((q, zz) => {
+        const h = q * H, y = yb - h;
+        const rect = svgEl('rect', { x: sx[n], y, width: sw[n], height: h, class: 'cell' }, svg);
+        const label = h >= 12 && sw[n] >= 16 ? svgText(svg, sx[n] + sw[n] / 2, y + h / 2 + 3.5, String(zz), 'cz') : null;
+        cells.push({ n, z: zz, rect, label, x: sx[n], y, w: sw[n], h });
+        yb = y;
+      });
+    });
+    const focus = svgEl('rect', { x: X0, y: Y0 - 1.5, width: 0, height: H + 3, class: 'focus', opacity: 0 }, svg);
+
+    const total = svgMath(svg, X0, RY - 9, '', 'big', 'start');
+    svgEl('rect', { x: X0, y: RY, width: W, height: RH, class: 'ruler' }, svg);
+    const pieces = svgEl('g', {}, svg);
+    [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+      svgEl('line', { x1: X0 + v * W, x2: X0 + v * W, y1: RY + RH, y2: RY + RH + 4, class: 'tick' }, svg);
+      svgText(svg, X0 + v * W, RY + RH + 16, trim(v), '');
+    });
+
+    const contrib = () => PN.map((_, n) => JOINT[n][z] || 0);
+    const setTotal = v => setSvgMath(total, `P(Z = ${z}) = ${trim(v)}`);
+
+    function ledgerHTML() {
+      const v = contrib();
+      const sum = v.reduce((a, b) => a + b, 0);
+      const head = `<thead><tr><th>\\(n\\)</th><th>\\(P(N = n)\\)</th><th>\\(P(Z = ${z} \\mid N = n)\\)</th><th>product</th></tr></thead>`;
+      const body = PN.map((p, n) => `<tr><td>${n}</td><td>${trim(p)}</td><td>${trim(COND[n][z] || 0)}</td><td>${trim(v[n])}</td></tr>`).join('');
+      return `${head}<tbody>${body}</tbody><tfoot><tr><td colspan="3">Add the products: \\(P(Z = ${z})\\)</td><td>${trim(sum)}</td></tr></tfoot>`;
+    }
+    function paint() {
+      cells.forEach(c => {
+        const hit = c.z === z;
+        c.rect.classList.toggle('hit', hit);
+        c.rect.setAttribute('fill-opacity', ((0.1 + 0.07 * c.z) * (hit ? 1 : 0.8)).toFixed(3));
+        if (c.label) c.label.classList.toggle('hit', hit);
+      });
+    }
+    function finished() {
+      pieces.textContent = '';
+      let cum = 0;
+      contrib().forEach(v => {
+        if (v > 0) { svgEl('rect', { x: X0 + cum * W, y: RY, width: v * W, height: RH, class: 'piece' }, pieces); cum += v; }
+      });
+      setTotal(cum);
+    }
+    function render() {
+      paint();
+      finished();
+      focus.setAttribute('opacity', 0);
+      setMath(ledger, ledgerHTML());
+    }
+
+    const chips = makeChips($('#area-chips'), PZ.map((_, k) => ({ html: String(k), aria: `Track Z = ${k}` })), 'amber', k => {
+      z = k; run.start(); press(chips, z); render();
+    });
+    press(chips, z);
+
+    async function play() {
+      const alive = run.start();
+      paint();
+      pieces.textContent = '';
+      setTotal(0);
+      const rows = $$('tbody tr', ledger), foot = $('tfoot tr', ledger);
+      rows.forEach(r => r.classList.remove('on'));
+      if (foot) foot.classList.remove('lit');
+      const v = contrib();
+      let cum = 0;
+      for (let n = 0; n < PN.length; n++) {
+        if (!alive()) return;
+        rows.forEach((r, i) => r.classList.toggle('on', i === n));
+        focus.setAttribute('x', sx[n] - 1); focus.setAttribute('width', sw[n] + 2); focus.setAttribute('opacity', 1);
+        await pause(380);
+        if (!alive()) return;
+        if (v[n] > 0) {
+          const c = cells.find(c => c.n === n && c.z === z);
+          const r = svgEl('rect', { x: c.x, y: c.y, width: c.w, height: c.h, class: 'piece flying' }, pieces);
+          const tx = X0 + cum * W, tw = v[n] * W;
+          await tween(750, t => {
+            r.setAttribute('x', lerp(c.x, tx, t)); r.setAttribute('y', lerp(c.y, RY, t));
+            r.setAttribute('width', lerp(c.w, tw, t)); r.setAttribute('height', lerp(c.h, RH, t));
+          }, alive);
+          if (!alive()) return;
+          r.classList.remove('flying');
+          cum += v[n];
+          setTotal(cum);
+        } else {
+          await pause(500);
+        }
+      }
+      if (!alive()) return;
+      rows.forEach(r => r.classList.remove('on'));
+      focus.setAttribute('opacity', 0);
+      if (foot) foot.classList.add('lit');
+    }
+    $('#area-play').addEventListener('click', play);
+    render();
+  })();
+
+  /* ---------- Step 2: the joint table, summed two ways ---------- */
+  (function joint() {
+    const grid = $('#jt'), cap = $('#jt-cap'), run = Runner();
+    const maxJ = Math.max(...JOINT.flat());
+    const add = (cls, html, role) => {
+      const d = document.createElement('div');
+      d.className = cls; d.innerHTML = html;
+      void role;
+      grid.appendChild(d);
+      return d;
+    };
+    add('jt-h', '', 'columnheader');
+    for (let z = 0; z <= ZMAX; z++) add('jt-h', `${I('z')}=${z}`, 'columnheader');
+    add('jt-h', 'row<br>total', 'columnheader');
+    const rows = [], cellsByRow = [], cellsByCol = Array.from({ length: ZMAX + 1 }, () => []);
+    PN.forEach((p, n) => {
+      const els = [add('jt-rh', `<span class="a">${I('N')}=${n}</span><span class="b">${trim(p)}&thinsp;×</span>`, 'rowheader')];
+      cellsByRow[n] = [];
+      for (let z = 0; z <= ZMAX; z++) {
+        const j = JOINT[n][z];
+        if (j === undefined) { els.push(add('jt-c jt-empty', '<span class="a">·</span><span class="b">·</span>', 'cell')); continue; }
+        const d = add('jt-c', `<span class="a">${dot3(j)}</span><span class="b">${dot3(COND[n][z])}</span>`, 'cell');
+        d.style.setProperty('--ha', (j / maxJ).toFixed(3));
+        d.style.setProperty('--hb', COND[n][z].toFixed(3));
+        els.push(d); cellsByRow[n].push(d); cellsByCol[z].push(d);
+      }
+      els.push(add('jt-rs', `<span class="a">${trim(p)}</span><span class="b">1</span>`, 'cell'));
+      rows.push(els);
+    });
+    add('jt-rh', `${I('P')}(${I('Z')}=${I('z')})`, 'rowheader');
+    const colSums = PZ.map(p => add('jt-cs', dot3(p), 'cell'));
+    add('jt-cs', '1', 'cell');
+    add('jt-rh', `×&thinsp;${I('s')}<sup>${I('z')}</sup>`, 'rowheader');
+    const sRow = PZ.map((_, z) => add('jt-s', `${I('s')}<sup>${z}</sup>`, 'cell'));
+    add('jt-h', '');
+
+    const setFactored = (n, on) => rows[n].forEach(e => e.classList.toggle('f', on));
+    const clearMarks = () => {
+      $$('.hot', grid).forEach(c => c.classList.remove('hot'));
+      colSums.forEach(c => c.classList.remove('lit'));
+      sRow.forEach(c => c.classList.remove('lit'));
+    };
+
+    async function columns() {
+      const alive = run.start();
+      clearMarks();
+      const wasFactored = rows.some(r => r[0].classList.contains('f'));
+      rows.forEach((_, n) => setFactored(n, false));
+      setMath(cap, 'Adding down column \\(z\\) collects every way of getting \\(Z = z\\). The totals are \\(P(Z = z)\\), which is Step 1 again.');
+      if (wasFactored) await pause(450);
+      for (let z = 0; z <= ZMAX; z++) {
+        if (!alive()) return;
+        cellsByCol[z].forEach(c => c.classList.add('hot'));
+        await pause(430);
+        if (!alive()) return;
+        colSums[z].classList.add('lit');
+        cellsByCol[z].forEach(c => c.classList.remove('hot'));
+        await pause(130);
+      }
+      if (!alive()) return;
+      sRow.forEach(c => c.classList.add('lit'));
+      setMath(cap, 'Then multiply each column total by \\(s^z\\) and add. That is \\(\\sum_z P(Z = z)\\,s^z = \\Pi_Z(s)\\), the first line of the equation.');
+    }
+
+    async function factor() {
+      const alive = run.start();
+      clearMarks();
+      rows.forEach((_, n) => setFactored(n, false));
+      setMath(cap, 'Every cell in row \\(n\\) contains the same factor \\(P(N = n)\\). Taking it out leaves \\(P(Z = z \\mid N = n)\\) in the cells.');
+      await pause(250);
+      for (let n = 0; n < PN.length; n++) {
+        if (!alive()) return;
+        cellsByRow[n].forEach(c => c.classList.add('hot'));
+        await pause(380);
+        if (!alive()) return;
+        setFactored(n, true);
+        await pause(480);
+        if (!alive()) return;
+        cellsByRow[n].forEach(c => c.classList.remove('hot'));
+      }
+      if (!alive()) return;
+      setMath(cap, 'Each row is now \\(P(N = n)\\) times the distribution of \\(Z\\) given \\(N = n\\), which adds to 1. Weighting it by \\(s^z\\) and adding gives the inner sum in (2.9).');
+    }
+    $('#jt-col').addEventListener('click', columns);
+    $('#jt-row').addEventListener('click', factor);
+  })();
+
+  /* ---------- Step 3: one row is a sum of exactly n copies of X ---------- */
+  (function conditional() {
+    const svg = $('#cond-svg'), polys = $('#cond-polys'), run = Runner();
+    const X0 = 52, GAP = 42, BW = 30, BASE = 162, HM = 130;
+    [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+      const y = BASE - v * HM;
+      svgEl('line', { x1: X0 - 6, x2: X0 + ZMAX * GAP + BW + 4, y1: y, y2: y, class: v === 0 ? 'axis' : 'grid' }, svg);
+      if (v === 0 || v === 0.5 || v === 1) svgText(svg, X0 - 11, y + 4, trim(v), '', 'end');
+    });
+    const bars = [], labs = [];
+    for (let z = 0; z <= ZMAX; z++) {
+      const x = X0 + z * GAP;
+      bars.push(svgEl('rect', { x, y: BASE, width: BW, height: 0, class: 'bar' }, svg));
+      labs.push(svgText(svg, x + BW / 2, BASE - 5, '', 'blab'));
+      svgText(svg, x + BW / 2, BASE + 16, String(z), '');
+    }
+    svgMath(svg, X0 + ZMAX * GAP + BW + 9, BASE + 16, 'z', '', 'start');
+    const note = svgMath(svg, X0 + BW + 12, BASE - HM + 12, '', 'small', 'start');
+
+    // the four polynomials, generated from the same coefficients the bars use
+    const tex = n => {
+      const lhs = `\\sum_{z} P(Z = z \\mid N = ${n})\\,s^z`;
+      if (n === 0) return `\\begin{aligned}${lhs} &amp;= \\bigl(\\Pi_X(s)\\bigr)^0 \\\\ &amp;= 1\\end{aligned}`;
+      const d = 4 ** n, k = COND[n].map(x => Math.round(x * d));
+      const terms = k.map((c, i) => (i === 0 ? String(c) : `${c === 1 ? '' : c}s${i === 1 ? '' : `^{${i}}`}`)).join(' + ');
+      const mid = n === 1 ? '\\Pi_X(s)' : `\\bigl(\\Pi_X(s)\\bigr)^{${n}}`;
+      return `\\begin{aligned}${lhs} &amp;= ${mid} \\\\ &amp;= \\tfrac{1}{${d}}\\bigl(${terms}\\bigr)\\end{aligned}`;
+    };
+    polys.innerHTML = PN.map((_, n) => `<div class="pv" data-n="${n}"><div class="eq">\\[${tex(n)}\\]</div></div>`).join('');
+    const pvs = $$('.pv', polys);
+
+    const fracLabel = (v, n) => {
+      const d = 4 ** n, k = v * d;
+      if (d === 1) return trim(v);
+      return Math.abs(k - Math.round(k)) < 1e-9 ? `${Math.round(k)}/${d}` : dot3(v);
+    };
+    const cur = new Array(ZMAX + 1).fill(0);
+    function show(n, animate) {
+      const alive = run.start();
+      press(chips, n);
+      pvs.forEach((p, i) => { p.classList.toggle('on', i === n); p.setAttribute('aria-hidden', String(i !== n)); });
+      const target = PZ.map((_, z) => COND[n][z] || 0);
+      const from = cur.slice();
+      labs.forEach((l, z) => { l.textContent = target[z] > 0 ? fracLabel(target[z], n) : ''; });
+      setSvgMath(note, n === 0 ? 'Z = 0 for certain' : '');
+      tween(animate ? 450 : 0, t => {
+        bars.forEach((b, z) => {
+          const v = lerp(from[z], target[z], t);
+          cur[z] = v;
+          b.setAttribute('y', (BASE - v * HM).toFixed(2));
+          b.setAttribute('height', (v * HM).toFixed(2));
+          labs[z].setAttribute('y', (BASE - v * HM - 5).toFixed(2));
+        });
+      }, alive);
+    }
+    const chips = makeChips($('#cond-chips'), PN.map((_, n) => ({ html: `${I('N')} = ${n}`, aria: `Condition on N = ${n}` })), '', n => show(n, true));
+    show(2, false);
+  })();
+
+  /* ---------- Step 4: s becomes Pi_X(s) ---------- */
+  (function substitution() {
+    const line = $('#morph'), btn = $('#morph-btn'), run = Runner();
+    const slot = (a, b, cls = '') => `<span class="mslot ${cls}"><span class="va">\\(${a}\\)</span><span class="vb">\\(${b}\\)</span></span>`;
+    let html = `<span class="term">${slot('\\Pi_N(s)', '\\Pi_Z(s)', 'lhs')}<span>\\(=\\)</span></span>`;
+    PN.forEach((c, n) => {
+      if (n === 0) { html += `<span class="term"><span>\\(${c}\\)</span></span>`; return; }
+      const a = n === 1 ? 's' : `s^{${n}}`;
+      const b = n === 1 ? '\\Pi_X(s)' : `\\bigl(\\Pi_X(s)\\bigr)^{${n}}`;
+      html += `<span class="term"><span>\\(+\\;${c}\\)</span>${slot(a, b)}</span>`;
+    });
+    line.innerHTML = html;
+    const slots = $$('.mslot', line);
+    let on = false;
+
+    function measure() {
+      slots.forEach(s => {
+        const a = s.children[0].getBoundingClientRect().width;
+        const b = s.children[1].getBoundingClientRect().width;
+        if (!a || !b) return;
+        s._w = [Math.ceil(a), Math.ceil(b)];
+        s.style.transition = 'none';
+        s.style.width = s._w[on ? 1 : 0] + 'px';
+        void s.offsetWidth;
+        s.style.transition = '';
+      });
+    }
+    async function set(next) {
+      const alive = run.start();
+      on = next;
+      btn.classList.toggle('b', on);
+      btn.setAttribute('aria-pressed', String(on));
+      for (const s of slots) {
+        if (s._w) s.style.width = s._w[on ? 1 : 0] + 'px';
+        s.classList.toggle('b', on);
+        await pause(170);
+        if (!alive()) return;
+      }
+    }
+    btn.addEventListener('click', () => set(!on));
+
+    // measure the two widths of each slot once the maths is typeset and the fonts are in
+    const whenReady = () => {
+      const M = window.MathJax;
+      const ready = M && M.startup && M.startup.promise ? M.startup.promise : Promise.resolve();
+      ready.then(measure, measure);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ready.then(measure, measure));
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', whenReady);
+    else whenReady();
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(measure, 150); });
+
+    const range = $('#s-range');
+    const oS = $('#m-s'), oT = $('#m-t'), oZ = $('#m-z'), oD = $('#m-d');
+    function update() {
+      const s = Number(range.value), t = evalAt(PX, s);
+      oS.textContent = s.toFixed(2);
+      oT.textContent = t.toFixed(4);
+      oZ.textContent = evalAt(PN, t).toFixed(4);
+      oD.textContent = evalAt(PZ, s).toFixed(4);
+    }
+    range.addEventListener('input', update);
+    update();
+  })();
+
+  /* ---------- Check: simulate families against the composed p.g.f. ---------- */
+  (function simulate() {
+    const svg = $('#sim-svg'), out = $('#sim-out'), run = Runner();
+    const X0 = 52, GAP = 42, BW = 28, BASE = 166, HM = 140;
+    const gridG = svgEl('g', {}, svg);
+    const bars = [], marks = [], mlabs = [];
+    for (let z = 0; z <= ZMAX; z++) {
+      const x = X0 + z * GAP;
+      bars.push(svgEl('rect', { x, y: BASE, width: BW, height: 0, class: 'simbar' }, svg));
+      marks.push(svgEl('line', { x1: x - 3, x2: x + BW + 3, y1: BASE, y2: BASE, class: 'exact' }, svg));
+      mlabs.push(svgText(svg, x + BW / 2, BASE, dot3(PZ[z]), 'tx-p'));
+      svgText(svg, x + BW / 2, BASE + 16, String(z), '');
+    }
+    svgMath(svg, X0 + ZMAX * GAP + BW + 9, BASE + 16, 'z', '', 'start');
+
+    let counts, total, sum, sum2;
+    const reset = () => { counts = new Array(ZMAX + 1).fill(0); total = 0; sum = 0; sum2 = 0; };
+    function one() {
+      const n = drawFrom(PN);
+      let z = 0;
+      for (let i = 0; i < n; i++) z += drawFrom(PX);
+      counts[z]++; total++; sum += z; sum2 += z * z;
+    }
+    function render() {
+      const props = counts.map(c => (total ? c / total : 0));
+      const top = Math.max(...props, ...PZ);
+      const yMax = Math.max(0.35, Math.ceil((top + 0.04) * 10) / 10);
+      gridG.textContent = '';
+      for (let i = 0; i * 0.1 <= yMax + 1e-9; i++) {
+        const v = i * 0.1, y = BASE - (v / yMax) * HM;
+        svgEl('line', { x1: X0 - 6, x2: X0 + ZMAX * GAP + BW + 4, y1: y, y2: y, class: i === 0 ? 'axis' : 'grid' }, gridG);
+        svgText(gridG, X0 - 11, y + 4, trim(v, 1), '', 'end');
+      }
+      props.forEach((p, z) => {
+        const h = (p / yMax) * HM, ye = BASE - (PZ[z] / yMax) * HM;
+        bars[z].setAttribute('y', (BASE - h).toFixed(2));
+        bars[z].setAttribute('height', h.toFixed(2));
+        marks[z].setAttribute('y1', ye.toFixed(2));
+        marks[z].setAttribute('y2', ye.toFixed(2));
+        mlabs[z].setAttribute('y', (Math.min(ye, BASE - h) - 6).toFixed(2));
+      });
+      if (!total) { out.innerHTML = 'No families drawn yet. Press a button to start.'; return; }
+      const m = sum / total, v = total > 1 ? (sum2 - total * m * m) / (total - 1) : 0;
+      out.innerHTML = `${total.toLocaleString('en-GB')} families. Mean of ${I('Z')}: ${m.toFixed(3)} (formula ${trim(EZ, 3)}). Variance: ${v.toFixed(3)} (formula ${trim(VZ, 3)}).`;
+    }
+    async function more(k) {
+      const alive = run.start();
+      const frames = RM ? 1 : Math.min(30, Math.max(6, Math.round(k / 250)));
+      const per = Math.ceil(k / frames);
+      let done = 0;
+      while (done < k) {
+        const m = Math.min(per, k - done);
+        for (let i = 0; i < m; i++) one();
+        done += m;
+        render();
+        if (done < k) { await nextFrame(); if (!alive()) return; }
+      }
+    }
+    $('#sim-100').addEventListener('click', () => more(100));
+    $('#sim-10k').addEventListener('click', () => more(10000));
+    $('#sim-reset').addEventListener('click', () => { run.start(); reset(); render(); });
+    reset();
+    for (let i = 0; i < 1000; i++) one();
+    render();
+  })();
+
+  /* ---------- Why it matters: compose once per generation ---------- */
+  (function generations() {
+    const svg = $('#gen-svg'), out = $('#gen-out'), run = Runner();
+    const PRESETS = [[0.4, 0.4, 0.2], PX, [0.2, 0.4, 0.4]].map(dist => {
+      const gens = [null, dist];
+      for (let g = 2; g <= 5; g++) gens.push(compose(gens[g - 1], dist));
+      const a = dist[0], c = dist[2];
+      return { dist, gens, mu: meanOf(dist), q: c > 0 ? Math.min(1, a / c) : 1 };
+    });
+    const X0 = 42, W = 306, BASE = 166, HM = 132, MAXK = 32;
+    const gridG = svgEl('g', {}, svg), barG = svgEl('g', {}, svg);
+    const bars = [];
+    for (let k = 0; k <= MAXK; k++) bars.push(svgEl('rect', { x: X0, y: BASE, width: 0, height: 0, class: k === 0 ? 'bar0' : 'bar' }, barG));
+    const zeroLab = svgText(svg, X0, BASE, '', 'tx-a');
+    const cur = bars.map(() => ({ x: X0, w: 0, h: 0 }));
+    let preset = 1, gen = 4;
+
+    function show(animate) {
+      const alive = run.start();
+      press(presetChips, preset); press(genChips, gen - 1);
+      const P = PRESETS[preset], dist = P.gens[gen], m = dist.length;
+      const yMax = Math.max(0.3, Math.ceil(Math.max(...dist) * 10 - 1e-9) / 10 + 0.1);
+      gridG.textContent = '';
+      for (let i = 0; i * 0.1 <= yMax + 1e-9; i++) {
+        const v = i * 0.1, y = BASE - (v / yMax) * HM;
+        svgEl('line', { x1: X0 - 5, x2: X0 + W, y1: y, y2: y, class: i === 0 ? 'axis' : 'grid' }, gridG);
+        if (i % 2 === 0) svgText(gridG, X0 - 10, y + 4, trim(v, 1), '', 'end');
+      }
+      const slotW = W / m, bw = Math.max(2, Math.min(26, slotW * 0.74));
+      const step = m - 1 <= 8 ? 1 : (m - 1) / 8;
+      for (let k = 0; k < m; k += step) svgText(gridG, X0 + k * slotW + slotW / 2, BASE + 16, String(k), '');
+      svgMath(gridG, X0 + W + 2, BASE + 16, 'k', '', 'start');
+      const target = bars.map((_, k) => (k < m ? { x: X0 + k * slotW + (slotW - bw) / 2, w: bw, h: (dist[k] / yMax) * HM } : { x: X0 + W, w: 0, h: 0 }));
+      const from = cur.map(g => ({ ...g }));
+      zeroLab.textContent = dist[0].toFixed(3);
+      tween(animate ? 520 : 0, t => {
+        bars.forEach((b, k) => {
+          const g = { x: lerp(from[k].x, target[k].x, t), w: lerp(from[k].w, target[k].w, t), h: lerp(from[k].h, target[k].h, t) };
+          cur[k] = g;
+          b.setAttribute('x', g.x.toFixed(2)); b.setAttribute('width', g.w.toFixed(2));
+          b.setAttribute('y', (BASE - g.h).toFixed(2)); b.setAttribute('height', g.h.toFixed(2));
+        });
+        zeroLab.setAttribute('x', (cur[0].x + cur[0].w / 2).toFixed(2));
+        zeroLab.setAttribute('y', (BASE - cur[0].h - 6).toFixed(2));
+      }, alive);
+
+      const seq = P.gens.slice(1, 6).map((d, i) => {
+        const val = d[0].toFixed(3);
+        return i + 1 === gen ? `<b>${val}</b>` : i + 1 > gen ? `<span style="opacity:.45">${val}</span>` : val;
+      }).join(' · ');
+      setMath(out,
+        `<div><dt>Offspring \\(P(X = 0), P(X = 1), P(X = 2)\\)</dt><dd>${P.dist.map(p => trim(p)).join(', ')}</dd></div>` +
+        `<div><dt>\\(P(Z_n = 0)\\) for \\(n = 1, \\ldots, 5\\)</dt><dd>${seq}</dd></div>` +
+        `<div><dt>Expected size \\(E(Z_{${gen}}) = \\mu^{${gen}}\\)</dt><dd>${(P.mu ** gen).toFixed(3)}</dd></div>` +
+        `<div><dt>Long-run chance of dying out, the smallest root of \\(s = \\Pi_X(s)\\)</dt><dd>${trim(P.q, 3)}</dd></div>`);
+    }
+
+    const playRun = Runner();   // separate from the bar tweens, so a chip press stops Play
+    const presetChips = makeChips($('#gen-presets'), PRESETS.map(p => ({ html: trim(p.mu, 2), aria: `Offspring mean ${trim(p.mu, 2)}` })), '', i => { playRun.start(); preset = i; show(true); });
+    const genChips = makeChips($('#gen-chips'), [1, 2, 3, 4, 5].map(g => ({ html: String(g), aria: `Generation ${g}` })), '', i => { playRun.start(); gen = i + 1; show(true); });
+    $('#gen-play').addEventListener('click', async () => {
+      const mine = playRun.start();
+      for (let g = 1; g <= 5; g++) {
+        gen = g;
+        show(true);
+        await pause(950);
+        if (!mine()) return;
+      }
+    });
+    show(false);
+  })();
+})();
+</script>
+</body>
+</html>
